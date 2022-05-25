@@ -2,7 +2,13 @@
 var Color;
 (function (Color) {
     Color[Color["Empty"] = 0] = "Empty";
-    Color[Color["Filled"] = 1] = "Filled";
+    Color[Color["Cyan"] = 1] = "Cyan";
+    Color[Color["Yellow"] = 2] = "Yellow";
+    Color[Color["Purple"] = 3] = "Purple";
+    Color[Color["Green"] = 4] = "Green";
+    Color[Color["Red"] = 5] = "Red";
+    Color[Color["Blue"] = 6] = "Blue";
+    Color[Color["Orange"] = 7] = "Orange";
 })(Color || (Color = {}));
 const BG_STYLE = 'black';
 const VISIBLE_HOR_CELL_COUNT = 10;
@@ -11,8 +17,26 @@ function getStyleForColor(color) {
     if (color == Color.Empty) {
         return BG_STYLE;
     }
-    if (color == Color.Filled) {
-        return 'DarkSlateBlue';
+    if (color == Color.Cyan) {
+        return 'Cyan';
+    }
+    if (color == Color.Yellow) {
+        return 'Yellow';
+    }
+    if (color == Color.Purple) {
+        return 'Purple';
+    }
+    if (color == Color.Green) {
+        return 'Green';
+    }
+    if (color == Color.Red) {
+        return 'Red';
+    }
+    if (color == Color.Blue) {
+        return 'Blue';
+    }
+    if (color == Color.Orange) {
+        return 'Orange';
     }
     return "pink";
 }
@@ -40,48 +64,48 @@ class Piece {
             }
         }
     }
-    static makeI(c = Color.Filled) {
+    static makeI(c = Color.Cyan) {
         let shape = [
             [c, c, c, c],
         ];
         return new Piece(shape, [3, 21]);
     }
-    static makeZ(c = Color.Filled) {
+    static makeZ(c = Color.Red) {
         let shape = [
             [c, c, 0],
             [0, c, c],
         ];
         return new Piece(shape, [3, 21]);
     }
-    static makeS(c = Color.Filled) {
+    static makeS(c = Color.Green) {
         let shape = [
             [0, c, c],
             [c, c, 0],
         ];
         return new Piece(shape, [3, 21]);
     }
-    static makeO(c = Color.Filled) {
+    static makeO(c = Color.Yellow) {
         let shape = [
             [c, c],
             [c, c],
         ];
         return new Piece(shape, [4, 21]);
     }
-    static makeT(c = Color.Filled) {
+    static makeT(c = Color.Purple) {
         let shape = [
             [c, c, c],
             [0, c, 0],
         ];
         return new Piece(shape, [3, 21]);
     }
-    static makeJ(c = Color.Filled) {
+    static makeJ(c = Color.Blue) {
         let shape = [
             [c, 0, 0],
             [c, c, c],
         ];
         return new Piece(shape, [3, 21]);
     }
-    static makeL(c = Color.Filled) {
+    static makeL(c = Color.Orange) {
         let shape = [
             [0, 0, c],
             [c, c, c],
