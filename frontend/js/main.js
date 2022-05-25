@@ -90,6 +90,7 @@ class Game {
                 return;
             }
             this.bakePiece(this.activePiece);
+            this.checkLineClear();
             this.activePiece = Piece.makeRandom();
         }
         else {
@@ -97,6 +98,37 @@ class Game {
             this.activePiece.position[1] -= 1;
         }
         this.render();
+    }
+    checkLineClear() {
+        const moveRowsDown = (from) => {
+            for (let y = from; y < this.board.length - 1; y++) {
+                const dstRow = this.board[y];
+                const srcRow = this.board[y + 1];
+                for (let x = 0; x < dstRow.length; x++) {
+                    dstRow[x] = srcRow[x];
+                }
+            }
+            // Then clear the top row
+            const top = this.board[this.board.length - 1];
+            for (let x = 0; x < top.length; x++) {
+                top[x] = Color.Empty;
+            }
+        };
+        for (let y = 0; y < this.board.length; y++) {
+            const row = this.board[y];
+            let full = true;
+            for (let x = 0; x < row.length; x++) {
+                const color = row[x];
+                if (color === Color.Empty) {
+                    full = false;
+                    break;
+                }
+            }
+            if (full) {
+                moveRowsDown(y);
+                y--;
+            }
+        }
     }
     /**
      * WARNING: It must be true that: |dx| <= 1 and |dy| <= 1
