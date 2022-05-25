@@ -1,152 +1,10 @@
 
+import { Color, getStyleForColor } from "./base";
+import { Piece } from "./piece";
 
-enum Color {
-    Empty = 0,
-    Cyan,
-    Yellow,
-    Purple,
-    Green,
-    Red,
-    Blue,
-    Orange,
-}
-
-const BG_STYLE = 'black';
 const VISIBLE_HOR_CELL_COUNT = 10;
 const VISIBLE_VER_CELL_COUNT = 20;
 
-function getStyleForColor(color: Color): string {
-    if (color == Color.Empty) {
-        return BG_STYLE;
-    }
-    if (color == Color.Cyan) {
-        return 'Cyan';
-    }
-    if (color == Color.Yellow) {
-        return 'Yellow';
-    }
-    if (color == Color.Purple) {
-        return 'Purple';
-    }
-    if (color == Color.Green) {
-        return 'Green';
-    }
-    if (color == Color.Red) {
-        return 'Red';
-    }
-    if (color == Color.Blue) {
-        return 'Blue';
-    }
-    if (color == Color.Orange) {
-        return 'Orange';
-    }
-    return "pink";
-}
-
-class Piece {
-    public shape: Color[][];
-
-    // The coordinates on the board of lower left corner of the piece
-    public position: [number, number];
-
-    constructor(shape: Color[][], pos: [number, number]) {
-        this.shape = shape;
-        this.position = pos;
-    }
-
-    /**
-     * Calls `calllback` for every non-empty cell of the piece.
-     * 
-     * For each cell, the callback gets the color of the cell and the
-     * coordinates on the board for that cell.
-     */
-    forEachCell(callback: (color: Color, boardX: number, boardY: number) => void) {
-        for (let py = 0; py < this.shape.length; py++) {
-            const y = this.position[1] + py;
-            const pRow = this.shape[py];
-            for (let px = 0; px < pRow.length; px++) {
-                const x = this.position[0] + px;
-                const color = pRow[px];
-                if (color !== Color.Empty) {
-                    callback(color, x, y);
-                }
-            }
-        }
-    }
-
-    static makeI(c: Color = Color.Cyan) {
-        let shape = [
-            [c, c, c, c],
-        ];
-        return new Piece(shape, [3, 21])
-    }
-
-    static makeZ(c: Color = Color.Red) {
-        let shape = [
-            [c, c, 0],
-            [0, c, c],
-        ];
-        return new Piece(shape, [3, 21]);
-    }
-
-    static makeS(c: Color = Color.Green) {
-        let shape = [
-            [0, c, c],
-            [c, c, 0],
-        ];
-        return new Piece(shape, [3, 21]);
-    }
-
-    static makeO(c: Color = Color.Yellow) {
-        let shape = [
-            [c, c],
-            [c, c],
-        ];
-        return new Piece(shape, [4, 21]);
-    }
-
-    static makeT(c: Color = Color.Purple) {
-        let shape = [
-            [c, c, c],
-            [0, c, 0],
-        ]
-        return new Piece(shape, [3, 21]);
-    }
-
-    static makeJ(c: Color = Color.Blue) {
-        let shape = [
-            [c, 0, 0],
-            [c, c, c],
-        ]
-        return new Piece(shape, [3, 21]);
-    }
-    static makeL(c: Color = Color.Orange) {
-        let shape = [
-            [0, 0, c],
-            [c, c, c],
-        ]
-        return new Piece(shape, [3, 21]);
-    }
-
-    static makeRandom() {
-        let rand = Math.random() * 7;
-        if (rand < 1) {
-            return this.makeI();
-        } else if (rand < 2) {
-            return this.makeS();
-        } else if (rand < 3) {
-            return this.makeZ();
-        } else if (rand < 4) {
-            return this.makeO();
-        } else if (rand < 5) {
-            return this.makeT();
-        } else if (rand < 6) {
-            return this.makeJ();
-        } else {
-            return this.makeL();
-        }
-    }
-}
 
 class Game {
     protected canvas: HTMLCanvasElement;
@@ -160,12 +18,17 @@ class Game {
     protected userVelX: number;
     protected userVelY: number;
 
+    protected userMoveIntervalX: number;
+    protected userMoveIntervalY: number;
+
     constructor() {
         this.canvas = document.getElementById('game') as HTMLCanvasElement;
         this.activePiece = Piece.makeRandom();
         this.preventTouchdown = false;
         this.userVelX = 0;
         this.userVelY = 0;
+        this.userMoveIntervalX = 0;
+        this.userMoveIntervalY = 0;
         this.board = [];
         // The board is actually 10 * 40 big, but only the bottom 20 rows are visible to the player
         for (let y = 0; y < 40; y++) {
@@ -178,11 +41,24 @@ class Game {
 
         window.addEventListener('keydown', event => {
             // console.log(event.key);
+            if (event.key === "a") {
+                this.fallUpdate();
+            }
+            const restartHorMove = () => {
+                this.userMovementUpdate();
+                if (this.userMoveIntervalX) {
+                    clearInterval(this.userMoveIntervalX);
+                    this.userMoveIntervalX = 0;
+                }
+                this.userMoveIntervalX = setInterval(this.userMovementUpdate.bind(this), 80) as any;
+            };
             if (event.key === "ArrowRight") {
                 this.userVelX = 1;
+                restartHorMove();
             }
             if (event.key === "ArrowLeft") {
                 this.userVelX = -1;
+                restartHorMove();
             }
             if (event.key === "ArrowUp") {
                 // TODO: rotate the piece
@@ -206,7 +82,6 @@ class Game {
         })
 
         setInterval(this.fallUpdate.bind(this), 300);
-        setInterval(this.userMovementUpdate.bind(this), 80);
     }
 
     /**
@@ -214,6 +89,8 @@ class Game {
      */
     rotateCW() {
         this.preventTouchdown = true;
+        this.activePiece.rotate(true, this.canMove.bind(this));
+        this.render();
     }
 
     userMovementUpdate() {
